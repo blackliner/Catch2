@@ -6,6 +6,7 @@
 [Automatic test registration](#automatic-test-registration)<br>
 [CMake project options](#cmake-project-options)<br>
 [Installing Catch2 from git repository](#installing-catch2-from-git-repository)<br>
+[Installing Catch2 from vcpkg](#installing-catch2-from-vcpkg)<br>
 
 Because we use CMake to build Catch2, we also provide a couple of
 integration points for our users.
@@ -35,6 +36,20 @@ add_subdirectory(lib/Catch2)
 target_link_libraries(tests Catch2::Catch2)
 ```
 
+Another possibility is to use [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html):
+```cmake
+Include(FetchContent)
+
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG        v2.13.1)
+
+FetchContent_MakeAvailable(Catch2)
+
+target_link_libraries(tests Catch2::Catch2)
+```
+
 ## Automatic test registration
 
 Catch2's repository also contains two CMake scripts that help users
@@ -48,7 +63,7 @@ If Catch2 has been installed in system, both of these can be used after
 doing `find_package(Catch2 REQUIRED)`. Otherwise you need to add them
 to your CMake module path.
 
-### `Catch.cmake` and `AddCatchTests.cmake`
+### `Catch.cmake` and `CatchAddTests.cmake`
 
 `Catch.cmake` provides function `catch_discover_tests` to get tests from
 a target. This function works by running the resulting executable with
@@ -172,6 +187,16 @@ step will be re-ran when the test files change, letting new tests be
 automatically discovered. Defaults to `OFF`.
 
 
+Optionally, one can specify a launching command to run tests by setting the
+variable `OptionalCatchTestLauncher` before calling `ParseAndAddCatchTests`. For
+instance to run some tests using `MPI` and other sequentially, one can write
+```cmake
+set(OptionalCatchTestLauncher ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${NUMPROC})
+ParseAndAddCatchTests(mpi_foo)
+unset(OptionalCatchTestLauncher)
+ParseAndAddCatchTests(bar)
+```
+
 ## CMake project options
 
 Catch2's CMake project also provides some options for other projects
@@ -210,6 +235,19 @@ when configuring the build, and then modify your calls to
 [find_package](https://cmake.org/cmake/help/latest/command/find_package.html)
 accordingly.
 
+## Installing Catch2 from vcpkg
+
+Alternatively, you can build and install Catch2 using [vcpkg](https://github.com/microsoft/vcpkg/) dependency manager:
+```
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg integrate install
+./vcpkg install catch2
+```
+
+The catch2 port in vcpkg is kept up to date by microsoft team members and community contributors.
+If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
 
 ---
 
